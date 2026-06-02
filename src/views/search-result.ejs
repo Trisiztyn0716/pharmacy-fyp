@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="container">
+    <a href="/staff" class="back-link">&larr; Back to staff dashboard</a>
+
+    <section class="card">
+      <p class="eyebrow">DailyMed Search Result</p>
+      <h1><%= medicineName %></h1>
+
+      <% if (!info) { %>
+        <p class="error">
+          No information found from DailyMed. Try using a generic U.S. medicine name.
+        </p>
+      <% } else { %>
+        <p class="success">
+          Result retrieved from <%= fromCache ? "local cache" : "DailyMed API and saved to local cache" %>.
+        </p>
+
+        <div class="info-block">
+          <h2><%= info.title || medicineName %></h2>
+          <p><strong>Source:</strong> <%= info.source_name %></p>
+          <p><strong>SETID:</strong> <%= info.set_id || "-" %></p>
+          <p>
+            <strong>DailyMed URL:</strong>
+            <a href="<%= info.source_url %>" target="_blank"><%= info.source_url %></a>
+          </p>
+        </div>
+
+        <div class="warning">
+          <strong>Disclaimer:</strong>
+          <%= info.disclaimer %>
+        </div>
+      <% } %>
+    </section>
+  </main>
+</body>
+</html>

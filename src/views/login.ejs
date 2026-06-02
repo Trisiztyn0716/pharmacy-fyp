@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="auth-page">
+  <main class="login-shell">
+    <section class="login-brand">
+      <p class="eyebrow">Pharmacy Portal</p>
+      <h1>Welcome back</h1>
+      <p>
+        Access medicine services as a customer or manage operations as an authorised staff member.
+      </p>
+      <div class="role-summary">
+        <div>
+          <strong>Customers</strong>
+          <span>Browse pharmacy services and medicine information.</span>
+        </div>
+        <div>
+          <strong>Staff</strong>
+          <span>Manage inventory and internal pharmacy records.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card login-card">
+      <p class="eyebrow">Secure Sign In</p>
+      <h2><%= role === "staff" ? "Staff login" : "Customer login" %></h2>
+
+      <nav class="role-switch" aria-label="Choose account type">
+        <a class="<%= role === 'customer' ? 'active' : '' %>" href="/login?role=customer">Customer</a>
+        <a class="<%= role === 'staff' ? 'active' : '' %>" href="/login?role=staff">Staff</a>
+      </nav>
+
+      <% if (error) { %>
+        <p class="error login-error"><%= error %></p>
+      <% } %>
+      <% if (notice) { %>
+        <p class="success login-notice"><%= notice %></p>
+      <% } %>
+
+      <form action="/login" method="POST" class="form login-form">
+        <input type="hidden" name="role" value="<%= role %>">
+
+        <label for="email">Email address</label>
+        <input id="email" type="email" name="email" value="<%= email %>" autocomplete="username" required>
+
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required>
+
+        <button type="submit">Sign in as <%= role === "staff" ? "Staff" : "Customer" %></button>
+      </form>
+
+      <div class="signup-prompt">
+        <p>Do not have an account? Sign up as:</p>
+        <div class="signup-options">
+          <a href="/signup?role=customer">Basic User</a>
+          <a href="/signup?role=staff">Staff</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

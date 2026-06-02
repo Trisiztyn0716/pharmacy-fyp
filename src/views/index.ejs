@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="container staff-dashboard">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Staff Portal</p>
+        <h1>Pharmacy Management Dashboard</h1>
+        <p>
+          Manage local pharmacy inventory and retrieve general medicine label information from DailyMed.
+        </p>
+      </div>
+      <div class="account-actions">
+        <span>Signed in as <strong><%= user.full_name %></strong></span>
+        <form action="/logout" method="POST">
+          <button type="submit" class="secondary-button">Sign Out</button>
+        </form>
+      </div>
+    </section>
+
+    <nav class="staff-nav" aria-label="Staff navigation">
+      <a class="active" href="/staff">Inventory</a>
+      <a href="/staff/sales">Web Sales</a>
+    </nav>
+
+    <% if (message) { %>
+      <p class="success dashboard-alert"><%= message %></p>
+    <% } %>
+    <% if (error) { %>
+      <p class="error dashboard-alert dashboard-error"><%= error %></p>
+    <% } %>
+
+    <section class="card">
+      <h2>Search DailyMed Medicine Information</h2>
+      <form action="/staff/search" method="GET" class="inline-form">
+        <input type="text" name="name" placeholder="Try ibuprofen, acetaminophen, amoxicillin..." required>
+        <button type="submit">Search</button>
+      </form>
+      <p class="hint">
+        DailyMed works best with generic U.S. medicine names.
+      </p>
+    </section>
+
+    <section class="grid staff-grid">
+      <div class="card">
+        <h2>Add Medicine to Local Inventory</h2>
+
+        <form action="/medicines" method="POST" class="form" enctype="multipart/form-data">
+          <label>Medicine Name</label>
+          <input name="medicine_name" required>
+
+          <label>Brand Name</label>
+          <input name="brand_name">
+
+          <label>Category</label>
+          <input name="category" placeholder="Pain relief, Antibiotic...">
+
+          <label>Dosage Form</label>
+          <input name="dosage_form" placeholder="Tablet, Capsule, Syrup...">
+
+          <label>Strength</label>
+          <input name="strength" placeholder="500mg">
+
+          <label>Product Image</label>
+          <select name="image_url">
+            <option value="">No image selected</option>
+            <% imageChoices.forEach(function(image) { %>
+              <option value="<%= image.url %>"><%= image.label %></option>
+            <% }) %>
+          </select>
+          <p class="form-note">Choose an existing image, or upload a new one below.</p>
+
+          <label>Upload New Image</label>
+          <div class="file-drop-zone" data-drop-zone>
+            <input type="file" name="medicine_image_file" accept="image/*">
+            <strong>Drop image here</strong>
+            <span>or click to choose from File Explorer</span>
+          </div>
+
+          <label>Stock Quantity</label>
+          <input name="stock_quantity" type="number" min="0" value="0">
+
+          <label>Import Price</label>
+          <input name="import_price" type="number" min="0" step="0.01" value="0">
+
+          <label>Selling Price</label>
+          <input name="selling_price" type="number" min="0" step="0.01" value="0">
+
+          <label>Expiry Date</label>
+          <input name="expiry_date" type="date">
+
+          <button type="submit">Add Medicine</button>
+        </form>
+      </div>
+
+      <div class="card inventory-card">
+        <h2>Inventory</h2>
+
+        <% if (medicines.length === 0) { %>
+          <p>No medicines yet.</p>
+        <% } else { %>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Stock</th>
+                  <th>Selling Price</th>
+                  <th>Expiry</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% medicines.forEach(function(medicine) { %>
+                  <tr>
+                    <td>
+                      <% if (medicine.image_url) { %>
+                        <img class="inventory-thumb" src="<%= medicine.image_url %>" alt="<%= medicine.medicine_name %>">
+                      <% } else { %>
+                        <span class="image-empty">No image</span>
+                      <% } %>
+                    </td>
+                    <td><%= medicine.medicine_name %></td>
+                    <td><%= medicine.brand_name || "-" %></td>
+                    <td><%= medicine.stock_quantity %></td>
+                    <td><%= medicine.selling_price %></td>
+                    <td><%= medicine.expiry_date ? (typeof medicine.expiry_date === "string" ? medicine.expiry_date.slice(0,10) : medicine.expiry_date.toISOString().slice(0,10)) : "-" %></td>
+                    <td>
+                      <div class="inventory-actions">
+                        <a href="/staff/medicines/<%= medicine.id %>/edit">Edit</a>
+                        <form action="/staff/medicines/<%= medicine.id %>/delete" method="POST" onsubmit="return confirm('Delete this medicine from inventory? Associated sales records will also be removed.');">
+                          <button type="submit">Delete</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  </main>
+  <script src="/staff.js"></script>
+</body>
+</html>
