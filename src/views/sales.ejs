@@ -30,6 +30,13 @@
     <section class="card sales-card">
       <h2>Online Purchase Requests</h2>
 
+      <% if (message) { %>
+        <p class="success dashboard-alert"><%= message %></p>
+      <% } %>
+      <% if (error) { %>
+        <p class="error dashboard-alert dashboard-error"><%= error %></p>
+      <% } %>
+
       <% if (purchases.length === 0) { %>
         <p>No web sales yet.</p>
       <% } else { %>
@@ -73,7 +80,33 @@
                   <td><%= purchase.address %></td>
                   <td><%= purchase.payment_method === "cod" ? "COD Cash" : "Card" %></td>
                   <td><%= Number(purchase.subtotal).toLocaleString("vi-VN") %> VND</td>
-                  <td><span class="status-pill"><%= purchase.status %></span></td>
+                  <td>
+                    <form class="status-form" action="/staff/sales/<%= purchase.id %>/status" method="POST">
+                      <span class="status-pill status-<%= purchase.status %>"><%= purchase.status %></span>
+                      <select name="status">
+                        <% statusOptions.forEach(function(option) { %>
+                          <option value="<%= option.value %>" <%= purchase.status === option.value ? "selected" : "" %>>
+                            <%= option.label %>
+                          </option>
+                        <% }) %>
+                      </select>
+                      <label class="denial-field">
+                        Denial reason
+                        <textarea name="denial_reason" rows="2" placeholder="Required if denied"><%= purchase.denial_reason || "" %></textarea>
+                      </label>
+                      <label class="denial-field">
+                        Hotline
+                        <input name="denial_hotline" value="<%= purchase.denial_hotline || defaultDenialHotline %>" placeholder="0367016147">
+                      </label>
+                      <button type="submit">Update</button>
+                    </form>
+                    <% if (purchase.status === "denied" && purchase.denial_reason) { %>
+                      <div class="denial-note">
+                        <strong>Reason:</strong> <%= purchase.denial_reason %><br>
+                        <strong>Hotline:</strong> <%= purchase.denial_hotline || defaultDenialHotline %>
+                      </div>
+                    <% } %>
+                  </td>
                   <td><%= purchase.created_at ? purchase.created_at.toISOString().slice(0, 10) : "-" %></td>
                 </tr>
               <% }) %>

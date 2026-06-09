@@ -130,8 +130,8 @@ async function getAllPurchases() {
   return result.rows;
 }
 
-async function updateOrderStatus(orderId, status) {
-  const allowedStatuses = ["Pending", "Approved", "Rejected", "Delivered"];
+async function updateOrderStatus(orderId, status, details = {}) {
+  const allowedStatuses = ["pending", "approved", "denied"];
 
   if (!allowedStatuses.includes(status)) {
     throw new Error("Invalid order status");
@@ -139,12 +139,20 @@ async function updateOrderStatus(orderId, status) {
 
   const result = await pool.query(
     `
-    UPDATE purchase
-    SET status = $1
-    WHERE id = $2
+    UPDATE purchases
+    SET status = $1,
+        denial_reason = CASE WHEN $2 THEN $3 ELSE NULL END,
+        denial_hotline = CASE WHEN $2 THEN $4 ELSE NULL END
+    WHERE id = $5
     RETURNING *
     `,
-    [status, orderId]
+    [
+      status,
+      status === "denied",
+      details.denialReason || null,
+      details.denialHotline || null,
+      orderId
+    ]
   );
 
   return result.rows[0];
