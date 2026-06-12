@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="container staff-dashboard">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Staff Portal</p>
+        <h1>Web Sales</h1>
+        <p>Review customer online purchase requests and delivery details.</p>
+      </div>
+      <div class="account-actions">
+        <span>Signed in as <strong><%= user.full_name %></strong></span>
+        <form action="/logout" method="POST">
+          <button type="submit" class="secondary-button">Sign Out</button>
+        </form>
+      </div>
+    </section>
+
+    <nav class="staff-nav" aria-label="Staff navigation">
+      <a href="/staff">Inventory</a>
+      <a class="active" href="/staff/sales">Web Sales</a>
+    </nav>
+
+    <section class="card sales-card">
+      <h2>Online Purchase Requests</h2>
+
+      <% if (purchases.length === 0) { %>
+        <p>No web sales yet.</p>
+      <% } else { %>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Product</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Payment</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% purchases.forEach(function(purchase) { %>
+                <tr>
+                  <td><strong><%= purchase.order_code %></strong></td>
+                  <td>
+                    <div class="sales-product">
+                      <% if (purchase.image_url) { %>
+                        <img src="<%= purchase.image_url %>" alt="<%= purchase.medicine_name %>">
+                      <% } %>
+                      <span>
+                        <strong><%= purchase.medicine_name %></strong>
+                        <small><%= purchase.quantity %> x <%= Number(purchase.unit_price).toLocaleString("vi-VN") %> VND</small>
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <%= purchase.customer_name %>
+                    <% if (purchase.account_email) { %>
+                      <small class="sales-email"><%= purchase.account_email %></small>
+                    <% } %>
+                  </td>
+                  <td><%= purchase.phone %></td>
+                  <td><%= purchase.address %></td>
+                  <td><%= purchase.payment_method === "cod" ? "COD Cash" : "Card" %></td>
+                  <td><%= Number(purchase.subtotal).toLocaleString("vi-VN") %> VND</td>
+                  <td><span class="status-pill"><%= purchase.status %></span></td>
+                  <td><%= purchase.created_at ? purchase.created_at.toISOString().slice(0, 10) : "-" %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+  </main>
+</body>
+</html>

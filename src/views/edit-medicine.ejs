@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="container edit-medicine-page">
+    <a href="/staff" class="back-link">&larr; Back to staff dashboard</a>
+
+    <nav class="staff-nav" aria-label="Staff navigation">
+      <a class="active" href="/staff">Inventory</a>
+      <a href="/staff/sales">Web Sales</a>
+    </nav>
+
+    <section class="card edit-medicine-card">
+      <p class="eyebrow">Staff Inventory</p>
+      <h1>Edit Medicine</h1>
+
+      <% if (error) { %>
+        <p class="error dashboard-alert dashboard-error"><%= error %></p>
+      <% } %>
+
+      <% if (medicine.image_url) { %>
+        <div class="edit-image-preview">
+          <img src="<%= medicine.image_url %>" alt="<%= medicine.medicine_name %>">
+          <span>Current product image</span>
+        </div>
+      <% } %>
+
+      <form action="/staff/medicines/<%= medicine.id %>/update" method="POST" class="form edit-form" enctype="multipart/form-data">
+        <label>Medicine Name</label>
+        <input name="medicine_name" value="<%= medicine.medicine_name %>" required>
+
+        <label>Brand Name</label>
+        <input name="brand_name" value="<%= medicine.brand_name || "" %>">
+
+        <label>Category</label>
+        <input name="category" value="<%= medicine.category || "" %>">
+
+        <label>Dosage Form</label>
+        <input name="dosage_form" value="<%= medicine.dosage_form || "" %>">
+
+        <label>Strength</label>
+        <input name="strength" value="<%= medicine.strength || "" %>">
+
+        <label>Product Image</label>
+        <select name="image_url">
+          <option value="">No image selected</option>
+          <% imageChoices.forEach(function(image) { %>
+            <option value="<%= image.url %>" <%= medicine.image_url === image.url ? "selected" : "" %>><%= image.label %></option>
+          <% }) %>
+        </select>
+
+        <label>Upload Replacement Image</label>
+        <div class="file-drop-zone" data-drop-zone>
+          <input type="file" name="medicine_image_file" accept="image/*">
+          <strong>Drop image here</strong>
+          <span>or click to choose from File Explorer</span>
+        </div>
+
+        <label>Stock Quantity</label>
+        <input name="stock_quantity" type="number" min="0" value="<%= medicine.stock_quantity %>">
+
+        <label>Import Price</label>
+        <input name="import_price" type="number" min="0" step="0.01" value="<%= medicine.import_price %>">
+
+        <label>Selling Price</label>
+        <input name="selling_price" type="number" min="0" step="0.01" value="<%= medicine.selling_price %>">
+
+        <label>Expiry Date</label>
+        <input name="expiry_date" type="date" value="<%= medicine.expiry_date || "" %>">
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </section>
+  </main>
+  <script src="/staff.js"></script>
+</body>
+</html>

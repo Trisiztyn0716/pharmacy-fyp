@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="store-page">
+  <div class="store-topbar">
+    <div class="store-width">
+      <span>Trusted pharmacy care for your family</span>
+      <div class="store-top-links">
+        <a href="#pharmacist">Talk to a pharmacist</a>
+        <a href="#stores">Find a pharmacy</a>
+        <span>Hotline: 1800 6821</span>
+      </div>
+    </div>
+  </div>
+
+  <header class="store-header">
+    <div class="store-width store-header-main">
+      <a href="/user/home" class="store-logo" aria-label="Pharmacy Portal home">
+        <span class="store-logo-symbol">+</span>
+        <span><strong>Pharmacy</strong>Portal<small>Your trusted online pharmacy</small></span>
+      </a>
+
+      <form class="store-search" action="/user/home#products" method="GET">
+        <label class="sr-only" for="medicine-search">Search medicines</label>
+        <input
+          id="medicine-search"
+          type="search"
+          name="search"
+          value="<%= searchTerm %>"
+          placeholder="Search medicine name, brand or category..."
+        >
+        <button type="submit">Search</button>
+      </form>
+
+      <div class="store-account">
+        <div>
+          <small>Welcome</small>
+          <strong><%= user.full_name %></strong>
+        </div>
+        <form action="/logout" method="POST">
+          <button type="submit" class="store-signout">Sign Out</button>
+        </form>
+      </div>
+    </div>
+
+    <nav class="store-nav" aria-label="Product categories">
+      <div class="store-width">
+        <a class="nav-feature" href="#categories">Categories</a>
+        <a href="#products">Medicines</a>
+        <a href="#services">Healthcare Services</a>
+        <a href="#pharmacist">Prescription Support</a>
+        <a href="#wellness">Health Tips</a>
+        <a href="#offers">Offers</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="store-width store-content">
+    <section class="store-hero" id="offers">
+      <div class="store-hero-copy">
+        <p class="store-tag">Online Pharmacy Care</p>
+        <h1>Everything you need for everyday health</h1>
+        <p>Order pharmacy essentials with trusted guidance, clear pricing and support from professional pharmacists.</p>
+        <div class="store-hero-actions">
+          <a class="store-primary-link" href="#products">Shop Medicines</a>
+          <a class="store-outline-link" href="#pharmacist">Upload Prescription</a>
+        </div>
+      </div>
+      <div class="store-hero-promo">
+        <p>Welcome Offer</p>
+        <strong>Save 15%</strong>
+        <span>on selected healthcare essentials</span>
+        <div class="promo-pill">Online only</div>
+      </div>
+    </section>
+
+    <section class="store-services" id="services" aria-label="Pharmacy services">
+      <article>
+        <span class="service-icon">Rx</span>
+        <div>
+          <h2>Prescription Order</h2>
+          <p>Upload your prescription for pharmacist review.</p>
+        </div>
+      </article>
+      <article id="pharmacist">
+        <span class="service-icon">24</span>
+        <div>
+          <h2>Pharmacist Advice</h2>
+          <p>Get support on safe medicine use.</p>
+        </div>
+      </article>
+      <article id="stores">
+        <span class="service-icon">+</span>
+        <div>
+          <h2>Nearby Pharmacy</h2>
+          <p>Find a store for pickup and consultation.</p>
+        </div>
+      </article>
+      <article>
+        <span class="service-icon">%</span>
+        <div>
+          <h2>Member Rewards</h2>
+          <p>Enjoy savings on wellness essentials.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="store-section" id="categories">
+      <div class="store-section-head">
+        <div>
+          <p class="store-tag">Browse By Need</p>
+          <h2>Popular categories</h2>
+        </div>
+      </div>
+      <div class="category-grid">
+        <% if (categories.length === 0) { %>
+          <a href="#products"><strong>Everyday medicine</strong><span>Available products</span></a>
+        <% } else { %>
+          <% categories.forEach(function(category) { %>
+            <a href="/user/home?search=<%= encodeURIComponent(category.category) %>#products">
+              <span class="category-mark">+</span>
+              <strong><%= category.category %></strong>
+              <span><%= category.product_count %> product<%= category.product_count === 1 ? "" : "s" %></span>
+            </a>
+          <% }) %>
+        <% } %>
+        <a href="#pharmacist">
+          <span class="category-mark heart">Rx</span>
+          <strong>Prescription Care</strong>
+          <span>Ask a pharmacist</span>
+        </a>
+        <a href="#wellness">
+          <span class="category-mark wellness">+</span>
+          <strong>Daily Wellness</strong>
+          <span>Healthy living support</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="store-section product-section" id="products">
+      <% if (purchaseNotice) { %>
+        <p class="success dashboard-alert"><%= purchaseNotice %></p>
+      <% } %>
+      <% if (purchaseError) { %>
+        <p class="error dashboard-alert dashboard-error"><%= purchaseError %></p>
+      <% } %>
+
+      <div class="store-section-head">
+        <div>
+          <p class="store-tag">Available Now</p>
+          <h2><%= searchTerm ? `Results for "${searchTerm}"` : "Featured pharmacy products" %></h2>
+        </div>
+        <% if (searchTerm) { %>
+          <a href="/user/home#products" class="store-text-link">Clear search</a>
+        <% } %>
+      </div>
+
+      <% if (medicines.length === 0) { %>
+        <div class="empty-products">
+          <h3>No available products match your search.</h3>
+          <p>Try a medicine name or speak with our pharmacy team for support.</p>
+        </div>
+      <% } else { %>
+        <div class="product-grid">
+          <% medicines.forEach(function(medicine) { %>
+            <article class="product-card">
+              <div class="product-visual">
+                <% if (medicine.image_url) { %>
+                  <img src="<%= medicine.image_url %>" alt="<%= medicine.medicine_name %>">
+                <% } else { %>
+                  <span><%= (medicine.dosage_form || "Health").slice(0, 1).toUpperCase() %></span>
+                  <small><%= medicine.dosage_form || "Medicine" %></small>
+                <% } %>
+              </div>
+              <p class="product-category"><%= medicine.category || "Pharmacy Product" %></p>
+              <h3><%= medicine.medicine_name %></h3>
+              <p class="product-meta">
+                <%= medicine.brand_name || "Generic" %>
+                <%= medicine.strength ? ` | ${medicine.strength}` : "" %>
+              </p>
+              <div class="product-price">
+                <strong><%= Number(medicine.selling_price).toLocaleString("vi-VN") %> VND</strong>
+                <span><%= medicine.stock_quantity %> in stock</span>
+              </div>
+              <button
+                type="button"
+                class="product-action"
+                data-purchase-button
+                data-medicine-id="<%= medicine.id %>"
+                data-medicine-name="<%= medicine.medicine_name %>"
+                data-medicine-price="<%= Number(medicine.selling_price) %>"
+                data-medicine-stock="<%= medicine.stock_quantity %>"
+              >
+                Purchase
+              </button>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="store-wellness" id="wellness">
+      <div>
+        <p class="store-tag">Safe Medicine Use</p>
+        <h2>Health support you can trust</h2>
+        <p>Prescription medicines must be supplied following a valid prescription and pharmacist review. Medicine information shown here is for general reference only.</p>
+      </div>
+      <div class="wellness-cards">
+        <article>
+          <strong>Medicine guidance</strong>
+          <p>Learn how to use medicines safely and correctly.</p>
+        </article>
+        <article>
+          <strong>Order support</strong>
+          <p>Ask for help with stock availability and pickup.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="store-footer">
+    <div class="store-width">
+      <strong>PharmacyPortal</strong>
+      <p>Quality pharmacy products and professional healthcare support.</p>
+      <span>This website does not replace medical advice from a licensed professional.</span>
+    </div>
+  </footer>
+
+  <div class="purchase-modal" data-purchase-modal hidden>
+    <div class="purchase-modal-panel">
+      <button type="button" class="purchase-modal-close" data-purchase-close aria-label="Close purchase form">&times;</button>
+      <p class="store-tag">Checkout</p>
+      <h2>Complete Your Purchase</h2>
+      <p class="purchase-product-summary" data-purchase-summary>Select a product to purchase.</p>
+
+      <form action="/user/purchases" method="POST" class="form purchase-form">
+        <input type="hidden" name="medicine_id" data-purchase-medicine-id>
+
+        <label>Quantity</label>
+        <input name="quantity" type="number" min="1" value="1" data-purchase-quantity required>
+
+        <label>Customer Name</label>
+        <input name="customer_name" value="<%= user.full_name %>" autocomplete="name" required>
+
+        <label>Phone Number</label>
+        <input name="phone" autocomplete="tel" placeholder="Example: 0901234567" required>
+
+        <label>Delivery Address</label>
+        <textarea name="address" rows="3" placeholder="House number, street, district, city" required></textarea>
+
+        <label>Payment Option</label>
+        <div class="payment-options">
+          <label><input type="radio" name="payment_method" value="cod" checked> COD Cash</label>
+          <label><input type="radio" name="payment_method" value="card"> Card</label>
+        </div>
+        <p class="form-note">Card payment stores only the selected method. Do not enter card numbers here.</p>
+
+        <button type="submit">Submit Purchase Request</button>
+      </form>
+    </div>
+  </div>
+  <script src="/store.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="auth-page">
+  <main class="signup-shell">
+    <section class="card signup-card verification-card">
+      <a href="/signup?role=staff" class="back-link">&larr; Start again</a>
+      <p class="eyebrow">Staff Verification</p>
+      <h1>Check your email</h1>
+      <p class="verification-copy">
+        We sent a six-digit verification code to <strong><%= email %></strong>.
+        Enter it below within 10 minutes to create your staff account.
+      </p>
+
+      <% if (error) { %>
+        <p class="error login-error"><%= error %></p>
+      <% } %>
+
+      <form action="/signup/staff/verify" method="POST" class="form login-form">
+        <input type="hidden" name="request_id" value="<%= requestId %>">
+
+        <label for="verification-code">Verification code</label>
+        <input
+          id="verification-code"
+          class="verification-code"
+          name="verification_code"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          autocomplete="one-time-code"
+          required
+        >
+
+        <button type="submit">Verify and Create Staff Account</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
