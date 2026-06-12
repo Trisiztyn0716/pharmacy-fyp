@@ -83,7 +83,10 @@ CREATE TABLE purchases (
     phone VARCHAR(50) NOT NULL,
     address TEXT NOT NULL,
     payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('card', 'cod')),
-    status VARCHAR(30) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')),
+    status VARCHAR(30) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'denied')),
+    stock_deducted BOOLEAN NOT NULL DEFAULT false,
+    denial_reason TEXT,
+    denial_hotline VARCHAR(50),
     subtotal NUMERIC(12,2) NOT NULL CHECK (subtotal >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -3,6 +3,7 @@ const emailService = require("../services/emailService");
 const staffRegistrationModel = require("../models/staffRegistrationModel");
 const userModel = require("../models/userModel");
 const medicineModel = require("../models/medicineModel");
+const purchaseModel = require("../models/purchaseModel");
 
 const STAFF_VERIFICATION_LIFETIME_MINUTES = 10;
 const MAX_STAFF_VERIFICATION_ATTEMPTS = 5;
@@ -380,9 +381,10 @@ async function userHome(req, res) {
   const searchTerm = String(req.query.search || "").trim().slice(0, 100);
 
   try {
-    const [medicines, categories] = await Promise.all([
+    const [medicines, categories, purchases] = await Promise.all([
       medicineModel.getAvailableMedicines(searchTerm),
-      medicineModel.getAvailableCategories()
+      medicineModel.getAvailableCategories(),
+      purchaseModel.getPurchasesByUserId(req.user.id)
     ]);
 
     res.render("user-home", {
@@ -390,6 +392,7 @@ async function userHome(req, res) {
       user: req.user,
       medicines,
       categories,
+      purchases,
       searchTerm,
       purchaseNotice: purchaseNotice(req.query.order),
       purchaseError: req.query.purchase_error || null

@@ -221,6 +221,49 @@
         </article>
       </div>
     </section>
+
+    <section class="store-section my-orders-section" id="orders">
+      <div class="store-section-head">
+        <div>
+          <p class="store-tag">Purchase Tracking</p>
+          <h2>My Orders</h2>
+        </div>
+      </div>
+
+      <% if (!purchases || purchases.length === 0) { %>
+        <div class="empty-products">
+          <h3>No purchase requests yet.</h3>
+          <p>When you submit a purchase request, its approval status will appear here.</p>
+        </div>
+      <% } else { %>
+        <div class="orders-list">
+          <% purchases.forEach(function(purchase) { %>
+            <article class="order-card">
+              <div class="order-product">
+                <% if (purchase.image_url) { %>
+                  <img src="<%= purchase.image_url %>" alt="<%= purchase.medicine_name %>">
+                <% } %>
+                <div>
+                  <strong><%= purchase.medicine_name %></strong>
+                  <span><%= purchase.quantity %> x <%= Number(purchase.unit_price).toLocaleString("vi-VN") %> VND</span>
+                </div>
+              </div>
+              <div class="order-meta">
+                <span>Order: <strong><%= purchase.order_code %></strong></span>
+                <span>Total: <strong><%= Number(purchase.subtotal).toLocaleString("vi-VN") %> VND</strong></span>
+                <span>Status: <strong class="status-pill status-<%= purchase.status %>"><%= purchase.status %></strong></span>
+              </div>
+              <% if (purchase.status === "denied") { %>
+                <div class="denial-note customer-denial-note">
+                  <strong>Reason:</strong> <%= purchase.denial_reason || "Please contact the pharmacy for more information." %><br>
+                  <strong>Hotline:</strong> <%= purchase.denial_hotline || "0367016147" %>
+                </div>
+              <% } %>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
   </main>
 
   <footer class="store-footer">

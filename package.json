@@ -10,7 +10,10 @@
     "db:seed": "psql -U postgres -d pharmacy_db -f database/seed.sql",
     "db:add-auth": "psql -U postgres -d pharmacy_db -f database/add_authentication.sql",
     "db:add-medicine-images": "psql -U postgres -d pharmacy_db -f database/add_medicine_images.sql",
-    "db:add-purchases": "psql -U postgres -d pharmacy_db -f database/add_purchases.sql"
+    "db:add-purchases": "psql -U postgres -d pharmacy_db -f database/add_purchases.sql",
+    "db:update-purchase-statuses": "psql -U postgres -d pharmacy_db -f database/update_purchase_statuses.sql",
+    "db:add-purchase-denial-details": "psql -U postgres -d pharmacy_db -f database/add_purchase_denial_details.sql",
+    "db:update-purchase-stock-handling": "psql -U postgres -d pharmacy_db -f database/update_purchase_stock_handling.sql"
   },
   "dependencies": {
     "axios": "^1.7.9",

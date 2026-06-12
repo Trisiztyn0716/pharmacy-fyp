@@ -18,7 +18,6 @@ async function createPurchase(data) {
       SELECT id, medicine_name, brand_name, image_url, stock_quantity, selling_price
       FROM medicines
       WHERE id = $1
-      FOR UPDATE
       `,
       [data.medicineId]
     );
@@ -86,16 +85,6 @@ async function createPurchase(data) {
       ]
     );
 
-    await client.query(
-      `
-      UPDATE medicines
-      SET stock_quantity = stock_quantity - $2,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-      `,
-      [medicine.id, data.quantity]
-    );
-
     await client.query("COMMIT");
 
     return {
@@ -130,7 +119,142 @@ async function getAllPurchases() {
   return result.rows;
 }
 
+async function getPurchasesByUserId(userId) {
+  const result = await pool.query(
+    `
+    SELECT
+      p.*,
+      pi.medicine_name,
+      pi.brand_name,
+      pi.image_url,
+      pi.quantity,
+      pi.unit_price,
+      pi.total_price
+    FROM purchases p
+    JOIN purchase_items pi ON pi.purchase_id = p.id
+    WHERE p.user_id = $1
+    ORDER BY p.created_at DESC, p.id DESC
+    `,
+    [userId]
+  );
+
+  return result.rows;
+}
+
+async function updateOrderStatus(orderId, status, details = {}) {
+  const allowedStatuses = ["pending", "approved", "denied"];
+
+  if (!allowedStatuses.includes(status)) {
+    throw new Error("Invalid order status");
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const purchaseResult = await client.query(
+      `
+      SELECT *
+      FROM purchases
+      WHERE id = $1
+      FOR UPDATE
+      `,
+      [orderId]
+    );
+    const purchase = purchaseResult.rows[0];
+
+    if (!purchase) {
+      await client.query("ROLLBACK");
+      return null;
+    }
+
+    const itemResult = await client.query(
+      `
+      SELECT *
+      FROM purchase_items
+      WHERE purchase_id = $1
+      FOR UPDATE
+      `,
+      [orderId]
+    );
+    const items = itemResult.rows;
+
+    if (status === "approved" && !purchase.stock_deducted) {
+      for (const item of items) {
+        if (!item.medicine_id) {
+          throw new Error(`Cannot approve ${item.medicine_name} because the medicine record no longer exists.`);
+        }
+
+        const stockResult = await client.query(
+          `
+          UPDATE medicines
+          SET stock_quantity = stock_quantity - $2,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1
+            AND stock_quantity >= $2
+          RETURNING id
+          `,
+          [item.medicine_id, item.quantity]
+        );
+
+        if (stockResult.rowCount === 0) {
+          throw new Error(`Not enough stock to approve ${item.medicine_name}.`);
+        }
+      }
+    }
+
+    if (status !== "approved" && purchase.stock_deducted) {
+      for (const item of items) {
+        if (item.medicine_id) {
+          await client.query(
+            `
+            UPDATE medicines
+            SET stock_quantity = stock_quantity + $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+            `,
+            [item.medicine_id, item.quantity]
+          );
+        }
+      }
+    }
+
+    const denialReason = status === "denied" ? details.denialReason || null : null;
+    const denialHotline = status === "denied" ? details.denialHotline || null : null;
+
+    const updatedResult = await client.query(
+      `
+      UPDATE purchases
+      SET status = $1,
+          stock_deducted = $2,
+          denial_reason = $3,
+          denial_hotline = $4
+      WHERE id = $5
+      RETURNING *
+      `,
+      [
+        status,
+        status === "approved",
+        denialReason,
+        denialHotline,
+        orderId
+      ]
+    );
+
+    await client.query("COMMIT");
+    return updatedResult.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   createPurchase,
-  getAllPurchases
+  getAllPurchases,
+  getPurchasesByUserId,
+  updateOrderStatus
 };

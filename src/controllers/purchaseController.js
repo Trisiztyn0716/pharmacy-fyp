@@ -1,5 +1,7 @@
 const purchaseModel = require("../models/purchaseModel");
 
+const DEFAULT_DENIAL_HOTLINE = "0367016147";
+
 function cleanText(value) {
   return String(value || "").trim();
 }
@@ -71,14 +73,53 @@ async function salesPage(req, res) {
     res.render("sales", {
       pageTitle: "Web Sales | Staff Dashboard",
       user: req.user,
-      purchases
+      purchases,
+      message: req.query.status === "updated" ? "Purchase status updated." : null,
+      error: req.query.error || null,
+      defaultDenialHotline: DEFAULT_DENIAL_HOTLINE,
+      statusOptions: [
+        { value: "pending", label: "Pending" },
+        { value: "approved", label: "Approve" },
+        { value: "denied", label: "Deny" }
+      ]
     });
   } catch (error) {
     res.status(500).send(`Cannot load web sales: ${error.message}`);
   }
 }
 
+async function updatePurchaseStatus(req, res) {
+  try {
+    const orderId = req.params.id;
+    const status = cleanText(req.body.status).toLowerCase();
+    const denialReason = cleanText(req.body.denial_reason);
+    const denialHotline = cleanText(req.body.denial_hotline) || DEFAULT_DENIAL_HOTLINE;
+
+    if (status === "denied" && !denialReason) {
+      return res.redirect(`/staff/sales?error=${encodeURIComponent("A denial reason is required when denying a purchase.")}`);
+    }
+
+    if (status === "denied" && !/^[0-9+\-\s()]{8,20}$/.test(denialHotline)) {
+      return res.redirect(`/staff/sales?error=${encodeURIComponent("Enter a valid hotline phone number for denied purchases.")}`);
+    }
+
+    const purchase = await purchaseModel.updateOrderStatus(orderId, status, {
+      denialReason,
+      denialHotline
+    });
+
+    if (!purchase) {
+      return res.status(404).send("Purchase not found");
+    }
+
+    res.redirect("/staff/sales?status=updated");
+  } catch (error) {
+    res.redirect(`/staff/sales?error=${encodeURIComponent(error.message)}`);
+  }
+}
+
 module.exports = {
   createPurchase,
-  salesPage
+  salesPage,
+  updatePurchaseStatus
 };
